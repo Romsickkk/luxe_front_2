@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { useForm } from "react-hook-form";
 
-import { useGetTableDataQuery, useUpdateArtistByIdMutation, useUploadNewArtistMutation } from "./apiArtists";
+import { NewArtist, useGetTableDataQuery, useUpdateArtistByIdMutation, useUploadNewArtistMutation } from "./apiArtists";
 
 import { type ArtistData } from "./apiArtists";
 
@@ -61,15 +61,25 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
     formState: { errors, isDirty },
     reset,
   } = useForm<FormData>({
-    defaultValues: { name, facebook, vk, spotify, soundcloud, instagram, twitter },
+    defaultValues: {
+      name: name ?? "",
+      facebook: facebook ?? "",
+      vk: vk ?? "",
+      spotify: spotify ?? "",
+      soundcloud: soundcloud ?? "",
+      instagram: instagram ?? "",
+      twitter: twitter ?? "",
+    },
   });
 
   const changeImage = useChangeImage({ avatar, avatarFile, setNewAvatar });
 
   function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
+
     if (files && imageFilter(files)) {
       const file = files[0];
+
       const imageUrl = URL.createObjectURL(file);
       setNewAvatar(imageUrl);
       setAvatarFile(file);
@@ -81,14 +91,40 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
   async function onSubmit(data: FormData) {
     if (format === "Add") {
       try {
-        uploadNewArtist({ newData: data });
-        toast.success("Artist created");
-      } catch (error) {
-        toast.error("Failed to create artist");
-      } finally {
+        const formData = new window.FormData();
+
+        const normalizedData: FormData = Object.fromEntries(
+          Object.entries(data).map(([key, value]) => {
+            if (key !== "name" && value && !value.startsWith("http")) {
+              return [key, `https://${value}`];
+            }
+            return [key, value];
+          })
+        ) as FormData;
+
+        (Object.entries(normalizedData) as [keyof NewArtist, string][]).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+
+        if (avatarFile) {
+          formData.append("avatar", avatarFile);
+        }
+
+        const response = await uploadNewArtist(formData).unwrap();
+        toast.success(response.message);
+        console.log(response);
+
         reset();
         onRequestClose();
         refetch();
+      } catch (error) {
+        const err = error as { status?: number; data?: { message?: string } };
+        if (err?.data?.message) {
+          toast.error(err.data.message);
+        } else {
+          toast.error("Unknown error");
+        }
+      } finally {
       }
       return;
     }
@@ -100,32 +136,39 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
         return;
       }
 
-      if (avatarChanged && avatarFile) {
-        setIsLoadingImage(true);
-        await changeImage();
-        setIsLoadingImage(false);
-      }
-      const newData: ArtistData = {
-        ...currentArtist,
-        ...Object.fromEntries(
-          Object.entries(data).filter(([key, value]) => value !== currentArtist?.[key as keyof FormData])
-        ),
-        ...(avatarChanged ? { avatar: newAvatar } : {}),
-      };
+      // if (avatarChanged && avatarFile) {
+      //   setIsLoadingImage(true);
+      //   await changeImage();
+      //   setIsLoadingImage(false);
+      // }
 
-      if (Object.keys(newData).length) {
+      const formData = new FormData();
+
+      Object.entries(data).forEach(([key, value]) => {
+        const currentValue = currentArtist[key as keyof ArtistData];
+        if (value !== currentValue && value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      if (avatarChanged && avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
+
+      if ([...formData.keys()].length > 0) {
         try {
-          await updateArtistById({ id: newData.id, newData });
+          const response = await updateArtistById({ id: currentArtist.id, newData: formData });
+          toast.success(response.data.message);
+
+          reset();
+          onRequestClose();
+          refetch();
         } catch (error) {
           console.log("Artist data update error: ", error);
           toast.error("Artist data update error");
         }
       }
-      toast.success("Artist information updated.");
 
-      reset();
-      onRequestClose();
-      refetch();
       return;
     }
   }

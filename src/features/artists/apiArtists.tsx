@@ -12,7 +12,7 @@ export type ArtistData = {
   twitter: string | undefined;
 };
 
-type NewArtist = Omit<ArtistData, "id" | "avatar">;
+export type NewArtist = Omit<ArtistData, "id">;
 
 export const apiArtists = createApi({
   reducerPath: "apiArtists",
@@ -36,29 +36,34 @@ export const apiArtists = createApi({
     //   query: (id) => `artists/${id}/exists`,
     // }),
 
-    uploadNewArtist: builder.mutation<any, { newData: NewArtist }>({
-      query: ({ newData }) => ({
+    uploadNewArtist: builder.mutation<any, FormData>({
+      query: (formData) => ({
         url: "artists/create",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    updateArtistById: builder.mutation<any, { id: number; newData: FormData }>({
+      query: ({ id, newData }) => ({
+        url: `artists/update/${id}`,
         method: "POST",
         body: newData,
       }),
     }),
 
-    updateArtistById: builder.mutation<any, { id: number; newData: ArtistData }>({
-      query: ({ id, newData }) => ({
-        url: `artists/${id}/update`,
-        method: "PUT",
-        body: newData,
-      }),
-    }),
-
-    deleteArtist: builder.mutation<any, number>({
+    deleteArtistById: builder.mutation<any, number>({
       query: (id) => ({
-        url: `artists/${id}`,
+        url: `artists/delete/${id}`,
         method: "DELETE",
       }),
     }),
   }),
 });
 // useIsHaveArtistQuery
-export const { useGetTableDataQuery, useUploadNewArtistMutation, useUpdateArtistByIdMutation } = apiArtists;
+export const {
+  useGetTableDataQuery,
+  useUploadNewArtistMutation,
+  useUpdateArtistByIdMutation,
+  useDeleteArtistByIdMutation,
+} = apiArtists;

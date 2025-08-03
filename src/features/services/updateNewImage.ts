@@ -19,7 +19,7 @@ export async function updateNewImage(
   formData.append("avatar", file);
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/admin/upload-avatar", {
+    const response = await fetch("http://127.0.0.1:8000/api/artist/update", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

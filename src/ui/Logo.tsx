@@ -11,6 +11,8 @@ const Img = styled.img`
   height: 9.6rem;
   width: auto;
   border-radius: 50%;
+  user-select: none;
+  -webkit-user-drag: none;
 `;
 
 function Logo() {

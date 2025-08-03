@@ -1,4 +1,4 @@
-import { type ArtistData } from "./apiArtists";
+import { useDeleteArtistByIdMutation, useGetTableDataQuery, type ArtistData } from "./apiArtists";
 
 import ReactModal from "react-modal";
 import ArtistsForm from "./ArtistsForm";
@@ -6,6 +6,7 @@ import Button from "../../ui/Button";
 
 import { type ModalType } from "./ArtistsAgGrid";
 import { ButtonContainer, modalStyles, WarningText } from "../styles/FormsStyles";
+import toast from "react-hot-toast";
 
 interface ModalInterface {
   modalName: ModalType;
@@ -15,7 +16,31 @@ interface ModalInterface {
 ReactModal.setAppElement("#root");
 
 function ArtistsFormModal({ modalName, onRequestClose, currentArtist }: ModalInterface) {
+  const [deleteArtistById] = useDeleteArtistByIdMutation();
+  const { refetch } = useGetTableDataQuery();
   const isOpen = !!modalName;
+
+  async function handleDeleteArtist() {
+    if (!currentArtist) {
+      toast.error("No artist.");
+      return;
+    }
+
+    try {
+      const response = await deleteArtistById(currentArtist.id).unwrap();
+      toast.success(response.message);
+    } catch (error) {
+      console.log(error);
+      const err = error as { status?: number; data?: { message?: string } };
+      if (err?.data?.message) {
+        toast.error(err.data.message);
+      } else {
+        toast.error("Unknown error");
+      }
+    }
+    refetch();
+    onRequestClose();
+  }
 
   return (
     <ReactModal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel={`${modalName} Modal`} style={modalStyles}>
@@ -37,7 +62,7 @@ function ArtistsFormModal({ modalName, onRequestClose, currentArtist }: ModalInt
             <Button $variations="secondary" $size="medium" onClick={onRequestClose}>
               Cancel
             </Button>
-            <Button $variations="danger" $size="medium" onClick={onRequestClose}>
+            <Button $variations="danger" $size="medium" onClick={handleDeleteArtist}>
               Delete
             </Button>
           </ButtonContainer>
