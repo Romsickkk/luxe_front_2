@@ -7,13 +7,6 @@ export async function updateNewImage(
   updateImage: (payload: { avatar: string }) => Promise<void>
 ) {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    toast.error("No auth token");
-    navigate("/login");
-    throw new Error("No auth token");
-  }
 
   const formData = new FormData();
   formData.append("avatar", file);
@@ -22,10 +15,10 @@ export async function updateNewImage(
     const response = await fetch("http://127.0.0.1:8000/api/artist/update", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
         Accept: "application/json",
       },
       body: formData,
+      credentials: "include",
     });
 
     if (!response.ok) {

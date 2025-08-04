@@ -13,7 +13,7 @@ import Button from "../../ui/Button";
 import Select from "react-select";
 
 import makeAnimated from "react-select/animated";
-import useSelectData from "../../ui/useSelectData";
+import useSelectData from "../../hooks/useSelectData";
 import DefaultAvatar from "../../assets/default-avatar.png";
 import { selectStyles } from "../styles/selectStyles";
 import {

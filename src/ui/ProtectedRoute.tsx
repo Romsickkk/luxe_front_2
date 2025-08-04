@@ -20,7 +20,10 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { data: user, isLoading, error } = useCurrentUserQuery(undefined);
 
   useEffect(() => {
-    if (!user && !isLoading) navigate("/login");
+    if (!user && !isLoading) {
+      toast.error("You are not authenticated");
+      navigate("/login");
+    }
   }, [user, isLoading, error, navigate]);
 
   if (isLoading) {
@@ -35,7 +38,7 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
     return children;
   }
 
-  return toast.error("You are not authenticated");
+  return null;
 }
 
 export default ProtectedRoute;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import useReleasessColumnDefs from "./useReleasesColumnDefs";
+import useReleasesColumnDefs from "./useReleasesColumnDefs";
 import { AgGridReact } from "ag-grid-react";
 import { type ReleasesData, useGetTableDataQuery } from "./apiReleases";
 import {
@@ -21,7 +21,8 @@ function ReleasesAgGrid() {
   const { data, error, isLoading } = useGetTableDataQuery();
   const [currentModal, setCurrentModal] = useState<ModalType | null>(null);
   const [currentReleases, setCurrentReleases] = useState<ReleasesData | null>(null);
-  const releasesColumnDefs = useReleasessColumnDefs();
+  const releasesColumnDefs = useReleasesColumnDefs();
+  console.log(data);
 
   function openModal(modalName: ModalType) {
     setCurrentModal(modalName);

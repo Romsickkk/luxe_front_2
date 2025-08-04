@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getXSRFTokenFromCookie } from "../../services/srf";
 
 export type ReleasesData = {
   avatar: string | null;
@@ -11,11 +12,11 @@ export const apiReleases = createApi({
   reducerPath: "apiReleases",
   baseQuery: fetchBaseQuery({
     baseUrl: "http://127.0.0.1:8000/api",
-    prepareHeaders: (headers, { getState }) => {
-      // Если есть токен в localStorage — добавляем в заголовок
-      const token = localStorage.getItem("token");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+    prepareHeaders: (headers) => {
+      headers.set("Accept", "application/json");
+      const xsrfToken = getXSRFTokenFromCookie();
+      if (xsrfToken) {
+        headers.set("X-XSRF-TOKEN", xsrfToken);
       }
       return headers;
     },

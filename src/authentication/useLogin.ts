@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getXSRFTokenFromCookie } from "../services/srf";
 
 export interface LoginRequest {
   email: string;
@@ -6,7 +7,6 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
   admin: {
     id: number;
     name: string;
@@ -18,8 +18,15 @@ export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: "http://127.0.0.1:8000/api/",
+    credentials: "include",
     prepareHeaders: (headers) => {
       headers.set("Accept", "application/json");
+      const xsrfToken = getXSRFTokenFromCookie();
+
+      if (xsrfToken) {
+        headers.set("X-XSRF-TOKEN", xsrfToken);
+      }
+
       return headers;
     },
   }),

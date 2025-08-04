@@ -8,6 +8,7 @@ import Button from "../ui/Button";
 import toast from "react-hot-toast";
 import styled from "styled-components";
 import FormRowVertical from "../ui/FormRowVertical";
+import { fetchCsrfCookie } from "../services/srf";
 
 const ErrorWarning = styled.p`
   color: red;
@@ -22,6 +23,7 @@ function LoginForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    await fetchCsrfCookie();
     const res = await login({ name, password });
 
     if ("error" in res) {
@@ -36,6 +38,7 @@ function LoginForm() {
       toast.error("Login error: " + (error?.data || "unknown error"));
     }
   }, [error]);
+
   return (
     <Form onSubmit={(e) => handleSubmit(e)}>
       <FormRowVertical label="Name">

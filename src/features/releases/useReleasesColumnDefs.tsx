@@ -28,7 +28,7 @@ const getFilterParams = {
 };
 const socialNetworks: (keyof ReleasesData)[] = ["cygnus"];
 
-const useReleasessColumnDefs = () => {
+const useReleasesColumnDefs = () => {
   return useMemo<ColDef<ReleasesData>[]>(
     () => [
       {
@@ -119,4 +119,4 @@ const useReleasessColumnDefs = () => {
     []
   );
 };
-export default useReleasessColumnDefs;
+export default useReleasesColumnDefs;

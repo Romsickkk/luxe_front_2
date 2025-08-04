@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getXSRFTokenFromCookie } from "../../services/srf";
 
 export type ArtistData = {
   id: number;
@@ -18,12 +19,13 @@ export const apiArtists = createApi({
   reducerPath: "apiArtists",
   baseQuery: fetchBaseQuery({
     baseUrl: "http://127.0.0.1:8000/api/",
+    credentials: "include",
     prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
       headers.set("Accept", "application/json");
+      const xsrfToken = getXSRFTokenFromCookie();
+      if (xsrfToken) {
+        headers.set("X-XSRF-TOKEN", xsrfToken);
+      }
       return headers;
     },
   }),
