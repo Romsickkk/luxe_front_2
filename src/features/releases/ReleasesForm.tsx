@@ -6,7 +6,12 @@ import { Controller, useForm } from "react-hook-form";
 // import { useUpdateReleasesByNameMutation } from "./apiReleases";
 // import { useDeleteImageMutation, useUpdateImageMutation } from "../../services/apiReleasesAvatar";
 
-import { useGetTableDataQuery, useUpdateReleasesByNameMutation, type ReleasesData } from "./apiReleases";
+import {
+  useGetTableDataQuery,
+  useUpdateReleaseByNameMutation,
+  useUploadNewReleaseMutation,
+  type ReleasesData,
+} from "./apiReleases";
 
 import toast from "react-hot-toast";
 import Button from "../../ui/Button";
@@ -43,8 +48,9 @@ interface UserFormProps {
 
 function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps) {
   const { avatar, name, owners, cygnus } = currentReleases ?? {};
-  const { ownersNames, isLoading: isSelectLoading } = useSelectData();
-  const [updateReleasesByName, { isLoading }] = useUpdateReleasesByNameMutation();
+  const { ownersData, isLoading: isSelectLoading } = useSelectData();
+  const [updateReleaseByName, { isLoading }] = useUpdateReleaseByNameMutation();
+  const [uploadRelease] = useUploadNewReleaseMutation();
   const { refetch } = useGetTableDataQuery();
 
   // const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -76,10 +82,36 @@ function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps
 
   async function onSubmit(data: FormData) {
     if (format === "Add") {
-      console.log("Entered data:", { ...data, newAvatar });
-      reset();
-      onRequestClose();
-      return;
+      const ownersId: number[] | undefined = data.owners?.map(
+        (ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id
+      );
+      console.log({
+        name: data.name,
+        avatar: avatarChanged ? newAvatar : undefined,
+        cygnus: cygnus ? cygnus : undefined,
+        owners: ownersId,
+      });
+
+      try {
+        const response = await uploadRelease({
+          newData: {
+            name: data.name,
+            avatar: avatarChanged ? newAvatar : undefined,
+            cygnus: cygnus ? cygnus : undefined,
+            owners: ownersId,
+          },
+        }).unwrap();
+        reset();
+        onRequestClose();
+        console.log("response: ", response);
+      } catch (error) {
+        const err = error as { status?: number; data?: { message?: string } };
+        if (err?.data?.message) {
+          toast.error(err.data.message);
+        } else {
+          toast.error("Unknown error");
+        }
+      }
     }
 
     if (currentReleases && format === "Edit") {
@@ -102,7 +134,7 @@ function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps
         console.log("Datas changed:", newData);
 
         try {
-          await updateReleasesByName({ name: newData.name, newData });
+          await updateReleaseByName({ newData });
         } catch (error) {
           console.log("Releases data update error: ", error);
           toast.error("Releases data update error");
@@ -130,24 +162,28 @@ function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps
         <Controller
           name="owners"
           control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              closeMenuOnSelect={false}
-              components={animatedComponents}
-              options={ownersNames}
-              value={ownersNames.filter((obj) => field.value?.includes(obj.value))}
-              styles={selectStyles}
-              isLoading={isSelectLoading}
-              isSearchable={true}
-              isMulti
-              onMenuOpen={() => console.log("field", field)}
-              onChange={(selectedValues) => {
-                const selected = selectedValues as { value: string }[];
-                field.onChange(selected.map((obj) => obj.value));
-              }}
-            />
-          )}
+          render={({ field }) => {
+            return (
+              <Select
+                {...field}
+                closeMenuOnSelect={false}
+                components={animatedComponents}
+                options={ownersData}
+                value={ownersData.filter((obj) => {
+                  return field.value?.includes(obj.value);
+                })}
+                styles={selectStyles}
+                isLoading={isSelectLoading}
+                isSearchable={true}
+                isMulti
+                // onMenuOpen={() => console.log("field", field)}
+                onChange={(selectedValues) => {
+                  const selected = selectedValues as { value: string }[];
+                  field.onChange(selected.map((obj) => obj.value));
+                }}
+              />
+            );
+          }}
         />
 
         {errors.owners && <ErrorMessage>{errors.owners.message}</ErrorMessage>}

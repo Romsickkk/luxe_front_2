@@ -11,7 +11,7 @@ import {
 } from "ag-grid-community";
 
 import Spinner from "../../ui/Spinner";
-import ReleasessFormModal from "./ReleasesFormModal";
+import ReleasesFormModal from "./ReleasesFormModal";
 import AgGridWrapper from "../../ui/AgGridWrapper";
 import AddButton from "../../ui/AddButton";
 
@@ -22,7 +22,6 @@ function ReleasesAgGrid() {
   const [currentModal, setCurrentModal] = useState<ModalType | null>(null);
   const [currentReleases, setCurrentReleases] = useState<ReleasesData | null>(null);
   const releasesColumnDefs = useReleasesColumnDefs();
-  console.log(data);
 
   function openModal(modalName: ModalType) {
     setCurrentModal(modalName);
@@ -65,7 +64,7 @@ function ReleasesAgGrid() {
         />
       </AgGridWrapper>
 
-      <ReleasessFormModal modalName={currentModal} onRequestClose={closeModal} currentReleases={currentReleases} />
+      <ReleasesFormModal modalName={currentModal} onRequestClose={closeModal} currentReleases={currentReleases} />
     </div>
   );
 }

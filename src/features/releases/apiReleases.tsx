@@ -2,16 +2,21 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getXSRFTokenFromCookie } from "../../services/srf";
 
 export type ReleasesData = {
-  avatar: string | null;
+  avatar: string | undefined;
   name: string;
-  owners: string[];
-  cygnus: string;
+  owners: string[] | undefined;
+  cygnus: string | undefined;
+};
+
+type ReleasesDataPost = Omit<ReleasesData, "owners"> & {
+  owners: number[] | undefined;
 };
 
 export const apiReleases = createApi({
   reducerPath: "apiReleases",
   baseQuery: fetchBaseQuery({
     baseUrl: "http://127.0.0.1:8000/api",
+    credentials: "include",
     prepareHeaders: (headers) => {
       headers.set("Accept", "application/json");
       const xsrfToken = getXSRFTokenFromCookie();
@@ -27,17 +32,24 @@ export const apiReleases = createApi({
         url: "releases",
         method: "GET",
       }),
-      // Можно добавить transformResponse если нужно подстроить данные
     }),
 
-    updateReleasesByName: builder.mutation<any, { name: string; newData: ReleasesData }>({
-      query: ({ name, newData }) => ({
-        url: `releases/${encodeURIComponent(name)}`, // например, PUT на releases/{name}
-        method: "PUT", // или PATCH — зависит от API
+    uploadNewRelease: builder.mutation<any, { newData: ReleasesDataPost }>({
+      query: ({ newData }) => ({
+        url: "releases/create",
+        method: "POST",
+        body: newData,
+      }),
+    }),
+
+    updateReleaseByName: builder.mutation<any, { newData: ReleasesData }>({
+      query: ({ newData }) => ({
+        url: `/releases/create`,
+        method: "PUT",
         body: newData,
       }),
     }),
   }),
 });
 
-export const { useGetTableDataQuery, useUpdateReleasesByNameMutation } = apiReleases;
+export const { useGetTableDataQuery, useUploadNewReleaseMutation, useUpdateReleaseByNameMutation } = apiReleases;
