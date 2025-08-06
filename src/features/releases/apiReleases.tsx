@@ -2,7 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getXSRFTokenFromCookie } from "../../services/srf";
 
 export type ReleasesData = {
-  avatar: string | undefined;
+  id: number;
+  avatar: string | File | undefined;
   name: string;
   owners: string[] | undefined;
   cygnus: string | undefined;
@@ -34,22 +35,34 @@ export const apiReleases = createApi({
       }),
     }),
 
-    uploadNewRelease: builder.mutation<any, { newData: ReleasesDataPost }>({
-      query: ({ newData }) => ({
+    uploadNewRelease: builder.mutation<any, FormData>({
+      query: (formData) => ({
         url: "releases/create",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    updateReleaseById: builder.mutation<any, { id: number; newData: FormData }>({
+      query: ({ id, newData }) => ({
+        url: `/releases/update/${id}`,
         method: "POST",
         body: newData,
       }),
     }),
 
-    updateReleaseByName: builder.mutation<any, { newData: ReleasesData }>({
-      query: ({ newData }) => ({
-        url: `/releases/create`,
-        method: "PUT",
-        body: newData,
+    deleteReleaseById: builder.mutation<any, number>({
+      query: (id) => ({
+        url: `/releases/delete/${id}`,
+        method: "DELETE",
       }),
     }),
   }),
 });
 
-export const { useGetTableDataQuery, useUploadNewReleaseMutation, useUpdateReleaseByNameMutation } = apiReleases;
+export const {
+  useGetTableDataQuery,
+  useUploadNewReleaseMutation,
+  useUpdateReleaseByIdMutation,
+  useDeleteReleaseByIdMutation,
+} = apiReleases;

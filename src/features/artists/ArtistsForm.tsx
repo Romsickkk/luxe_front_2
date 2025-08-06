@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useForm } from "react-hook-form";
 
-import { NewArtist, useGetTableDataQuery, useUpdateArtistByIdMutation, useUploadNewArtistMutation } from "./apiArtists";
-
-import { type ArtistData } from "./apiArtists";
+import {
+  type ArtistData,
+  type NewArtist,
+  useGetTableDataQuery,
+  useUpdateArtistByIdMutation,
+  useUploadNewArtistMutation,
+} from "./apiArtists";
 
 import Button from "../../ui/Button";
 
@@ -25,9 +29,6 @@ import {
   UploadIcon,
 } from "../styles/FormsStyles";
 
-import useChangeImage from "../services/useChangeImage";
-// import useUniqueId from "../services/useUnicId";
-
 interface FormData {
   name: string;
   facebook: string;
@@ -46,20 +47,22 @@ interface UserFormProps {
 
 function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
   const { avatar, name, facebook, vk, spotify, soundcloud, instagram, twitter } = currentArtist ?? {};
-  const { refetch } = useGetTableDataQuery();
+  const { data: allArtists, refetch } = useGetTableDataQuery();
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [newAvatar, setNewAvatar] = useState<string>(avatar || DefaultAvatar);
   const [avatarChanged, setAvatarChanged] = useState<boolean>(false);
-  const [isLoadingImage, setIsLoadingImage] = useState<boolean>(false);
-  // const { newId } = useUniqueId();
   const [updateArtistById, { isLoading }] = useUpdateArtistByIdMutation();
   const [uploadNewArtist, { isLoading: isUploading }] = useUploadNewArtistMutation();
+  const [isNameDuplicate, setIsNameDuplicate] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isDirty },
+    watch,
     reset,
+    setError,
+    clearErrors,
   } = useForm<FormData>({
     defaultValues: {
       name: name ?? "",
@@ -72,8 +75,30 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
     },
   });
 
-  const changeImage = useChangeImage({ avatar, avatarFile, setNewAvatar });
+  // Duplicate control
+  const nameValue = watch("name");
 
+  useEffect(() => {
+    setIsNameDuplicate(false);
+    if (!nameValue || !allArtists) return;
+
+    const nameLower = nameValue.trim().toLowerCase();
+    const isDuplicate = allArtists.some(
+      (artist) => artist.name.toLowerCase() === nameLower && artist.id !== currentArtist?.id
+    );
+
+    if (isDuplicate) {
+      setIsNameDuplicate(true);
+      setError("name", {
+        type: "manual",
+        message: "Name must be unique",
+      });
+    } else {
+      clearErrors("name");
+    }
+  }, [nameValue, allArtists, setError, clearErrors, currentArtist]);
+
+  //Avatar filter
   function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
 
@@ -136,12 +161,6 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
         return;
       }
 
-      // if (avatarChanged && avatarFile) {
-      //   setIsLoadingImage(true);
-      //   await changeImage();
-      //   setIsLoadingImage(false);
-      // }
-
       const formData = new FormData();
 
       Object.entries(data).forEach(([key, value]) => {
@@ -189,7 +208,7 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
           <Label>{field.length > 3 ? field.charAt(0).toUpperCase() + field.slice(1) : field.toUpperCase()}</Label>
           <InputField
             {...register(field as keyof FormData, {
-              required: field === "name" ? `${field} is compulsory` : false,
+              required: field === "name" ? `${field[0].toUpperCase() + field.slice(1)} is compulsory` : false,
               pattern:
                 field !== "name"
                   ? {
@@ -205,17 +224,11 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
       ))}
 
       <ButtonContainer>
-        <Button
-          $variations="secondary"
-          $size="medium"
-          type="button"
-          disabled={isLoading || isLoadingImage}
-          onClick={onRequestClose}
-        >
+        <Button $variations="secondary" $size="medium" type="button" disabled={isLoading} onClick={onRequestClose}>
           Cancel
         </Button>
-        <Button $variations="primary" $size="medium" type="submit" disabled={isLoading || isLoadingImage}>
-          {isLoading || isLoadingImage ? "Saving..." : "Save"}
+        <Button $variations="primary" $size="medium" type="submit" disabled={isLoading || isNameDuplicate}>
+          {isLoading ? "Saving..." : "Save"}
         </Button>
       </ButtonContainer>
     </FormContainer>

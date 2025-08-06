@@ -26,8 +26,8 @@ export const HiddenFileInput = styled.input`
 
 export const AvatarWrapper = styled.div`
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -69,12 +69,12 @@ export const RoundAvatar = styled.div<{ src: string }>`
 `;
 
 export const InputField = styled.input`
-  padding: 0.8rem;
-  border: 1px solid var(--color-grey-200);
-  border-radius: 8px;
+  padding: 1.2rem 1rem;
+  border: 1.5px solid var(--color-grey-200);
+  border-radius: 12px;
   background: var(--color-grey-200);
 
-  font-size: 1rem;
+  font-size: 1.25rem;
   width: 100%;
   box-sizing: border-box;
 
@@ -89,12 +89,12 @@ export const InputField = styled.input`
 `;
 
 export const Label = styled.label`
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--color-grey-700);
 `;
 
 export const ErrorMessage = styled.p`
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: #ef4444;
 `;
 
@@ -104,13 +104,11 @@ export const ButtonContainer = styled.div`
   margin-top: 20px;
   width: 100%;
 `;
-
 export const modalStyles = {
   overlay: {
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     zIndex: 1000,
-    backdropFilter: "blur(3px)",
-    WebkitBackdropFilter: "blur(10px)",
+    backdropFilter: "blur(5px)",
   },
   content: {
     top: "50%",
@@ -119,13 +117,16 @@ export const modalStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
-    width: "400px",
+    width: "95vw",
+    maxWidth: "450px",
+    maxHeight: "95vh",
+    overflow: "auto",
     padding: "20px",
-    background: "var(--color-grey-100)",
+    background: "#1F2937",
     zIndex: 1010,
     borderRadius: "8px",
     boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-
+    color: "#fff",
     border: "none",
   },
 };

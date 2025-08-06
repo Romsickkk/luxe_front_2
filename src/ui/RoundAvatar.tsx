@@ -21,7 +21,10 @@ const modalStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
-    width: "700px",
+    width: "90vw",
+    maxWidth: "700px",
+    maxHeight: "90vh",
+    overflow: "auto",
     padding: "20px",
     background: "#1F2937",
     zIndex: 1010,
@@ -31,6 +34,29 @@ const modalStyles = {
     border: "none",
   },
 };
+
+const ModalContent = styled.div`
+  position: relative;
+  background: #1f2937;
+  padding: 20px;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border: none;
+  width: 90vw;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: auto;
+
+  @media (max-width: 768px) {
+    width: 95vw;
+    padding: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
+`;
 
 const RoundImage = styled.img`
   width: 38px;

@@ -8,7 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 
 import {
   useGetTableDataQuery,
-  useUpdateReleaseByNameMutation,
+  useUpdateReleaseByIdMutation,
   useUploadNewReleaseMutation,
   type ReleasesData,
 } from "./apiReleases";
@@ -42,19 +42,19 @@ interface FormData {
 
 interface UserFormProps {
   format: string | null;
-  currentReleases: ReleasesData | null;
+  currentRelease: ReleasesData | null;
   onRequestClose: () => void;
 }
 
-function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps) {
-  const { avatar, name, owners, cygnus } = currentReleases ?? {};
+function ReleasesForm({ format, currentRelease, onRequestClose }: UserFormProps) {
+  const { avatar, name, owners, cygnus } = currentRelease ?? {};
   const { ownersData, isLoading: isSelectLoading } = useSelectData();
-  const [updateReleaseByName, { isLoading }] = useUpdateReleaseByNameMutation();
+  const [updateReleaseByName, { isLoading }] = useUpdateReleaseByIdMutation();
   const [uploadRelease] = useUploadNewReleaseMutation();
   const { refetch } = useGetTableDataQuery();
 
-  // const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [newAvatar, setNewAvatar] = useState<string>(avatar || DefaultAvatar);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [newAvatar, setNewAvatar] = useState<string>(typeof avatar === "string" ? avatar : DefaultAvatar);
   const [avatarChanged, setAvatarChanged] = useState<boolean>(false);
   const animatedComponents = makeAnimated();
 
@@ -72,9 +72,11 @@ function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps
     const files = event.target.files;
     if (files && imageFilter(files)) {
       const file = files[0];
+
       const imageUrl = URL.createObjectURL(file);
       setNewAvatar(imageUrl);
-      // setAvatarFile(file);
+
+      setAvatarFile(file);
       setAvatarChanged(true);
       event.target.value = "";
     }
@@ -82,69 +84,89 @@ function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps
 
   async function onSubmit(data: FormData) {
     if (format === "Add") {
-      const ownersId: number[] | undefined = data.owners?.map(
-        (ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id
-      );
-      console.log({
-        name: data.name,
-        avatar: avatarChanged ? newAvatar : undefined,
-        cygnus: cygnus ? cygnus : undefined,
-        owners: ownersId,
-      });
-
       try {
-        const response = await uploadRelease({
-          newData: {
-            name: data.name,
-            avatar: avatarChanged ? newAvatar : undefined,
-            cygnus: cygnus ? cygnus : undefined,
-            owners: ownersId,
-          },
-        }).unwrap();
+        const ownersId: number[] =
+          data.owners?.map((ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id).filter(Boolean) ??
+          [];
+
+        const formData = new FormData();
+        formData.append("name", data.name);
+        if (data.cygnus) formData.append("cygnus", data.cygnus);
+        if (avatarFile) formData.append("avatar", avatarFile);
+        ownersId.forEach((ownerId, index) => {
+          formData.append(`owners[${index}]`, String(ownerId));
+        });
+
+        const response = await uploadRelease(formData).unwrap();
+
         reset();
         onRequestClose();
+        refetch();
+        toast.success("Release created successfully");
         console.log("response: ", response);
       } catch (error) {
         const err = error as { status?: number; data?: { message?: string } };
         if (err?.data?.message) {
           toast.error(err.data.message);
+          console.log(error);
         } else {
           toast.error("Unknown error");
+          console.log(error);
         }
       }
+      return;
     }
 
-    if (currentReleases && format === "Edit") {
+    if (currentRelease && format === "Edit") {
       if (!isDirty && !avatarChanged) {
-        console.log("Нет изменений");
         reset();
         onRequestClose();
         return;
       }
 
       const newData = {
-        ...currentReleases,
+        ...currentRelease,
         ...Object.fromEntries(
-          Object.entries(data).filter(([key, value]) => value !== currentReleases?.[key as keyof FormData])
+          Object.entries(data).filter(([key, value]) => value !== currentRelease?.[key as keyof FormData])
         ),
-        ...(avatarChanged ? { avatar: newAvatar } : {}),
+        ...(avatarChanged ? { avatar: avatarFile } : {}),
       };
 
-      if (Object.keys(newData).length) {
-        console.log("Datas changed:", newData);
+      try {
+        const formData = new FormData();
+        if (newData.name) formData.append("name", newData.name);
+        if (newData.cygnus) formData.append("cygnus", newData.cygnus);
 
-        try {
-          await updateReleaseByName({ newData });
-        } catch (error) {
-          console.log("Releases data update error: ", error);
-          toast.error("Releases data update error");
+        if (avatarChanged && avatarFile) {
+          if (newData.avatar) formData.append("avatar", newData.avatar);
         }
+        const ownersId: number[] =
+          data.owners?.map((ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id).filter(Boolean) ??
+          [];
+
+        if (ownersId.length > 0) {
+          ownersId.forEach((ownerId, index) => {
+            formData.append(`owners[${index}]`, String(ownerId));
+          });
+        } else {
+          formData.append("owners", "");
+        }
+
+        for (const [key, value] of formData) {
+          console.log(key, ": ", value);
+        }
+
+        const response = await updateReleaseByName({ id: currentRelease.id, newData: formData });
+        console.log(response);
+
+        toast.success("Releases information updated.");
+        reset();
+        onRequestClose();
+        refetch();
+      } catch (error) {
+        toast.error("Releases data update error");
       }
-      toast.success("Releases information updated.");
-      reset();
-      onRequestClose();
     }
-    refetch();
   }
 
   return (
@@ -194,7 +216,7 @@ function ReleasesForm({ format, currentReleases, onRequestClose }: UserFormProps
           <Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
           <InputField
             {...register(field as keyof FormData, {
-              required: field === "name" ? `${field} is compulsory` : false,
+              required: field === "name" ? `${field[0].toUpperCase() + field.slice(1)} is compulsory` : false,
               pattern:
                 field !== "name"
                   ? {

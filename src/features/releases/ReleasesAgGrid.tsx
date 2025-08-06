@@ -20,7 +20,7 @@ export type ModalType = "Edit" | "Delete" | "Add" | null;
 function ReleasesAgGrid() {
   const { data, error, isLoading } = useGetTableDataQuery();
   const [currentModal, setCurrentModal] = useState<ModalType | null>(null);
-  const [currentReleases, setCurrentReleases] = useState<ReleasesData | null>(null);
+  const [currentRelease, setCurrentRelease] = useState<ReleasesData | null>(null);
   const releasesColumnDefs = useReleasesColumnDefs();
 
   function openModal(modalName: ModalType) {
@@ -29,7 +29,7 @@ function ReleasesAgGrid() {
 
   function closeModal() {
     setCurrentModal(null);
-    setCurrentReleases(null);
+    setCurrentRelease(null);
   }
 
   if (isLoading) return <Spinner />;
@@ -58,13 +58,13 @@ function ReleasesAgGrid() {
           paginationPageSizeSelector={false}
           context={{
             openModal,
-            changeCurrentReleases: (releases: ReleasesData) => setCurrentReleases(releases),
+            changeCurrentReleases: (releases: ReleasesData) => setCurrentRelease(releases),
           }}
           modules={[PaginationModule, CellStyleModule, ClientSideRowModelModule, ValidationModule, TextFilterModule]}
         />
       </AgGridWrapper>
 
-      <ReleasesFormModal modalName={currentModal} onRequestClose={closeModal} currentReleases={currentReleases} />
+      <ReleasesFormModal modalName={currentModal} onRequestClose={closeModal} currentRelease={currentRelease} />
     </div>
   );
 }

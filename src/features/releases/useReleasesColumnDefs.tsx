@@ -59,8 +59,8 @@ const useReleasesColumnDefs = () => {
         floatingFilter: false,
       },
       {
-        headerName: "Poster",
-        field: "poster" as keyof ReleasesData,
+        headerName: "Avatar",
+        field: "avatar" as keyof ReleasesData,
         sortable: false,
         cellRenderer: (params: ICellRendererParams) => (
           <RoundAvatar src={params.value ? params.value : DefaultAvatar} alt={`${params.data.name} Poster`} />

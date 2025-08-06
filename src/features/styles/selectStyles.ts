@@ -11,11 +11,15 @@ export const selectStyles: StylesConfig = {
     zIndex: 111111,
   }),
 
-  control: (base) => ({
+  control: (base, state) => ({
     ...base,
     minHeight: 40,
     borderColor: "#4b5563",
     backgroundColor: "var(--color-grey-100)",
+    boxShadow: state.isFocused ? "0 0 0 1px #FF6E1B" : "none",
+    "&:hover": {
+      borderColor: "#FF6E1B",
+    },
   }),
 
   option: (base, { isFocused, isSelected }) => ({
@@ -45,7 +49,7 @@ export const selectStyles: StylesConfig = {
     ...base,
     color: "#ffffff",
     "&:hover": {
-      backgroundColor: "#ef4444",
+      backgroundColor: "#ff0000ff",
       color: "white",
     },
   }),
