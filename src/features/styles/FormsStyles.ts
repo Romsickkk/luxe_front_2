@@ -118,20 +118,21 @@ export const modalStyles = {
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
     width: "95vw",
-    maxWidth: "450px",
+    maxWidth: "500px",
     maxHeight: "95vh",
     overflow: "auto",
     padding: "20px",
-    background: "#1F2937",
+    background: "var(--color-grey-100)",
     zIndex: 1010,
     borderRadius: "8px",
     boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-    color: "#fff",
+    color: "var(--color-grey-900)",
     border: "none",
   },
 };
 
 export const WarningText = styled.p`
+  white-space: nowrap;
   font-size: 18px;
   font-weight: bold;
   text-align: center;

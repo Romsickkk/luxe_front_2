@@ -33,6 +33,7 @@ import {
   RoundAvatar,
   UploadIcon,
 } from "../styles/FormsStyles";
+import { responseWithToast } from "../services/responseWithToast";
 
 interface FormData {
   name: string;
@@ -84,35 +85,24 @@ function ReleasesForm({ format, currentRelease, onRequestClose }: UserFormProps)
 
   async function onSubmit(data: FormData) {
     if (format === "Add") {
-      try {
-        const ownersId: number[] =
-          data.owners?.map((ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id).filter(Boolean) ??
-          [];
+      const ownersId: number[] =
+        data.owners?.map((ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id).filter(Boolean) ??
+        [];
 
-        const formData = new FormData();
-        formData.append("name", data.name);
-        if (data.cygnus) formData.append("cygnus", data.cygnus);
-        if (avatarFile) formData.append("avatar", avatarFile);
-        ownersId.forEach((ownerId, index) => {
-          formData.append(`owners[${index}]`, String(ownerId));
-        });
+      const formData = new FormData();
+      formData.append("name", data.name);
+      if (data.cygnus) formData.append("cygnus", data.cygnus);
+      if (avatarFile) formData.append("avatar", avatarFile);
+      ownersId.forEach((ownerId, index) => {
+        formData.append(`owners[${index}]`, String(ownerId));
+      });
 
-        const response = await uploadRelease(formData).unwrap();
+      const response = await responseWithToast("Loading...", () => uploadRelease(formData).unwrap());
 
+      if (response) {
         reset();
         onRequestClose();
         refetch();
-        toast.success("Release created successfully");
-        console.log("response: ", response);
-      } catch (error) {
-        const err = error as { status?: number; data?: { message?: string } };
-        if (err?.data?.message) {
-          toast.error(err.data.message);
-          console.log(error);
-        } else {
-          toast.error("Unknown error");
-          console.log(error);
-        }
       }
       return;
     }
@@ -132,39 +122,37 @@ function ReleasesForm({ format, currentRelease, onRequestClose }: UserFormProps)
         ...(avatarChanged ? { avatar: avatarFile } : {}),
       };
 
-      try {
-        const formData = new FormData();
-        if (newData.name) formData.append("name", newData.name);
-        if (newData.cygnus) formData.append("cygnus", newData.cygnus);
+      const formData = new FormData();
+      if (newData.name) formData.append("name", newData.name);
+      if (newData.cygnus) formData.append("cygnus", newData.cygnus);
 
-        if (avatarChanged && avatarFile) {
-          if (newData.avatar) formData.append("avatar", newData.avatar);
-        }
-        const ownersId: number[] =
-          data.owners?.map((ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id).filter(Boolean) ??
-          [];
+      if (avatarChanged && avatarFile) {
+        if (newData.avatar) formData.append("avatar", newData.avatar);
+      }
+      const ownersId: number[] =
+        data.owners?.map((ownerName) => ownersData.find((owner) => owner.value === ownerName)!.id).filter(Boolean) ??
+        [];
 
-        if (ownersId.length > 0) {
-          ownersId.forEach((ownerId, index) => {
-            formData.append(`owners[${index}]`, String(ownerId));
-          });
-        } else {
-          formData.append("owners", "");
-        }
+      if (ownersId.length > 0) {
+        ownersId.forEach((ownerId, index) => {
+          formData.append(`owners[${index}]`, String(ownerId));
+        });
+      } else {
+        formData.append("owners", "");
+      }
 
-        for (const [key, value] of formData) {
-          console.log(key, ": ", value);
-        }
+      // for (const [key, value] of formData) {
+      //   console.log(key, ": ", value);
+      // }
 
-        const response = await updateReleaseByName({ id: currentRelease.id, newData: formData });
-        console.log(response);
+      const response = await responseWithToast("Loading...", () =>
+        updateReleaseByName({ id: currentRelease.id, newData: formData }).unwrap()
+      );
 
-        toast.success("Releases information updated.");
+      if (response) {
         reset();
         onRequestClose();
         refetch();
-      } catch (error) {
-        toast.error("Releases data update error");
       }
     }
   }

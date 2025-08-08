@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useReleasesColumnDefs from "./useReleasesColumnDefs";
 import { AgGridReact } from "ag-grid-react";
 import { type ReleasesData, useGetTableDataQuery } from "./apiReleases";
@@ -14,6 +14,8 @@ import Spinner from "../../ui/Spinner";
 import ReleasesFormModal from "./ReleasesFormModal";
 import AgGridWrapper from "../../ui/AgGridWrapper";
 import AddButton from "../../ui/AddButton";
+
+import { PiMicrophoneStageFill } from "react-icons/pi";
 
 export type ModalType = "Edit" | "Delete" | "Add" | null;
 
@@ -31,6 +33,7 @@ function ReleasesAgGrid() {
     setCurrentModal(null);
     setCurrentRelease(null);
   }
+  const rowData = useMemo(() => data ?? [], [data]);
 
   if (isLoading) return <Spinner />;
 
@@ -42,7 +45,7 @@ function ReleasesAgGrid() {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-        <AddButton changeModal={openModal} name="Release" />
+        <AddButton changeModal={openModal} name="Release" icon={PiMicrophoneStageFill} />
       </div>
 
       <AgGridWrapper className="ag-theme-alpine-dark">
@@ -52,7 +55,7 @@ function ReleasesAgGrid() {
             filter: true,
             floatingFilter: true,
           }}
-          rowData={data}
+          rowData={rowData}
           pagination={true}
           paginationPageSize={10}
           paginationPageSizeSelector={false}

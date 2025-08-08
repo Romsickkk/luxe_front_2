@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useArtistsColumnDefs } from "./useArtistsColumnDefs";
 import { AgGridReact } from "ag-grid-react";
 import { type ArtistData, useGetTableDataQuery } from "./apiArtists";
@@ -14,6 +14,7 @@ import Spinner from "../../ui/Spinner";
 import ArtistsFormModal from "./ArtistsFormModal";
 import AgGridWrapper from "../../ui/AgGridWrapper";
 import AddButton from "../../ui/AddButton";
+import { FaUserPlus } from "react-icons/fa";
 
 export type ModalType = "Edit" | "Delete" | "Add" | null;
 
@@ -22,6 +23,7 @@ function ArtistsAgGrid() {
   const [currentModal, setCurrentModal] = useState<ModalType | null>(null);
   const [currentArtist, setCurrentArtist] = useState<ArtistData | null>(null);
   const artistsColumnDefs = useArtistsColumnDefs();
+  console.log(data);
 
   function openModal(modalName: ModalType) {
     setCurrentModal(modalName);
@@ -31,7 +33,7 @@ function ArtistsAgGrid() {
     setCurrentModal(null);
     setCurrentArtist(null);
   }
-
+  const rowData = useMemo(() => data ?? [], [data]);
   if (isLoading) return <Spinner />;
 
   if (error) {
@@ -42,7 +44,7 @@ function ArtistsAgGrid() {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-        <AddButton changeModal={openModal} name="Artist" />
+        <AddButton changeModal={openModal} name="Release" icon={FaUserPlus} />
       </div>
 
       <AgGridWrapper>
@@ -52,7 +54,7 @@ function ArtistsAgGrid() {
             filter: true,
             floatingFilter: true,
           }}
-          rowData={data}
+          rowData={rowData}
           pagination={true}
           paginationPageSize={10}
           paginationPageSizeSelector={false}

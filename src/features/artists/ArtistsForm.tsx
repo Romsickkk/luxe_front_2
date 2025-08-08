@@ -12,7 +12,6 @@ import {
 
 import Button from "../../ui/Button";
 
-import toast from "react-hot-toast";
 import DefaultAvatar from "../../assets/default-avatar.png";
 import { imageFilter } from "../../hooks/imageFilter";
 
@@ -28,6 +27,7 @@ import {
   RoundAvatar,
   UploadIcon,
 } from "../styles/FormsStyles";
+import { responseWithToast } from "../services/responseWithToast";
 
 interface FormData {
   name: string;
@@ -51,8 +51,8 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [newAvatar, setNewAvatar] = useState<string>(avatar || DefaultAvatar);
   const [avatarChanged, setAvatarChanged] = useState<boolean>(false);
-  const [updateArtistById, { isLoading }] = useUpdateArtistByIdMutation();
-  const [uploadNewArtist, { isLoading: isUploading }] = useUploadNewArtistMutation();
+  const [updateArtistByName] = useUpdateArtistByIdMutation();
+  const [uploadNewArtist, { isLoading }] = useUploadNewArtistMutation();
   const [isNameDuplicate, setIsNameDuplicate] = useState(false);
 
   const {
@@ -115,41 +115,30 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
 
   async function onSubmit(data: FormData) {
     if (format === "Add") {
-      try {
-        const formData = new window.FormData();
+      const formData = new window.FormData();
 
-        const normalizedData: FormData = Object.fromEntries(
-          Object.entries(data).map(([key, value]) => {
-            if (key !== "name" && value && !value.startsWith("http")) {
-              return [key, `https://${value}`];
-            }
-            return [key, value];
-          })
-        ) as FormData;
+      const normalizedData: FormData = Object.fromEntries(
+        Object.entries(data).map(([key, value]) => {
+          if (key !== "name" && value && !value.startsWith("http")) {
+            return [key, `https://${value}`];
+          }
+          return [key, value];
+        })
+      ) as FormData;
 
-        (Object.entries(normalizedData) as [keyof NewArtist, string][]).forEach(([key, value]) => {
-          formData.append(key, value);
-        });
+      (Object.entries(normalizedData) as [keyof NewArtist, string][]).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
 
-        if (avatarFile) {
-          formData.append("avatar", avatarFile);
-        }
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
+      const response = await responseWithToast("Loading...", () => uploadNewArtist(formData).unwrap());
 
-        const response = await uploadNewArtist(formData).unwrap();
-        toast.success(response.message);
-        console.log(response);
-
+      if (response) {
         reset();
         onRequestClose();
         refetch();
-      } catch (error) {
-        const err = error as { status?: number; data?: { message?: string } };
-        if (err?.data?.message) {
-          toast.error(err.data.message);
-        } else {
-          toast.error("Unknown error");
-        }
-      } finally {
       }
       return;
     }
@@ -173,18 +162,18 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
       if (avatarChanged && avatarFile) {
         formData.append("avatar", avatarFile);
       }
-
+      for (const [key, value] of formData) {
+        console.log(key, value);
+      }
       if ([...formData.keys()].length > 0) {
-        try {
-          const response = await updateArtistById({ id: currentArtist.id, newData: formData });
-          toast.success(response.data.message);
+        const response = await responseWithToast("Loading...", () =>
+          updateArtistByName({ id: currentArtist.id, newData: formData }).unwrap()
+        );
 
+        if (response) {
           reset();
           onRequestClose();
           refetch();
-        } catch (error) {
-          console.log("Artist data update error: ", error);
-          toast.error("Artist data update error");
         }
       }
 

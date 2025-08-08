@@ -7,6 +7,7 @@ import Button from "../../ui/Button";
 import ReactModal from "react-modal";
 import ReleasesForm from "./ReleasesForm";
 import toast from "react-hot-toast";
+import styled from "styled-components";
 
 interface ModalInterface {
   modalName: ModalType;
@@ -14,6 +15,14 @@ interface ModalInterface {
   currentRelease?: ReleasesData | null;
 }
 ReactModal.setAppElement("#root");
+
+const ReleaseName = styled.span`
+  color: #ff6e1b;
+  margin: 0 8px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+`;
 
 function ReleasesFormModal({ modalName, onRequestClose, currentRelease }: ModalInterface) {
   const [deleteRelease] = useDeleteReleaseByIdMutation();
@@ -53,8 +62,7 @@ function ReleasesFormModal({ modalName, onRequestClose, currentRelease }: ModalI
       ) : modalName === "Delete" ? (
         <>
           <WarningText>
-            Are you sure to delete release{" "}
-            <span style={{ color: "#FF6E1B", margin: "0 5px" }}>{currentRelease?.name}</span> ?
+            Are you sure to delete release <ReleaseName>{currentRelease?.name}</ReleaseName> ?
           </WarningText>
 
           <ButtonContainer>

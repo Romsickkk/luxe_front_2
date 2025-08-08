@@ -10,6 +10,7 @@ import AgEditButton from "../../ui/AgEditButton";
 import AgLink from "../../ui/AgLink";
 import styled from "styled-components";
 import RoundAvatar from "../../ui/RoundAvatar";
+import { svgIcon } from "../../icons/svgIcons";
 
 const EditingButtonsDiv = styled.div`
   display: flex;
@@ -78,6 +79,9 @@ export const useArtistsColumnDefs = () => {
         floatingFilter: false,
         filter: "agTextColumnFilter",
         filterParams: getFilterParams,
+        icons: {
+          filter: svgIcon,
+        },
       },
       ...socialNetworks.map(
         (network, index, array) =>
@@ -91,6 +95,9 @@ export const useArtistsColumnDefs = () => {
             resizable: index !== array.length - 1,
             filter: "agTextColumnFilter",
             filterParams: getFilterParams,
+            icons: {
+              filter: " ",
+            },
           } as ColDef<ArtistData>)
       ),
     ],

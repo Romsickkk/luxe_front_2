@@ -1,6 +1,6 @@
 import { FaUser } from "react-icons/fa";
-import { GiEvilMoon } from "react-icons/gi";
-import { IoLogOut, IoSunny } from "react-icons/io5";
+
+import { IoLogOut } from "react-icons/io5";
 import styled from "styled-components";
 import ThemeToggle from "./ThemeToggle";
 
@@ -42,6 +42,7 @@ function Header() {
       </StyledSvg>
       <StyledSvg>
         <IoLogOut style={svgStyle} />
+        {/* <Logout /> */}
       </StyledSvg>
     </StyledHeader>
   );

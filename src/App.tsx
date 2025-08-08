@@ -1,13 +1,13 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
-import Dashboard from "./pages/Dashboard";
+import { lazy, Suspense } from "react";
 
 import "./App.css";
-import Artists from "./pages/Artists";
-import Login from "./pages/Login";
-import Releases from "./pages/Releases";
-import User from "./pages/User";
-import PageNotFound from "./pages/PageNotFound";
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Artists = lazy(() => import("./pages/Artists"));
+const Releases = lazy(() => import("./pages/Releases"));
+const User = lazy(() => import("./pages/User"));
+const Login = lazy(() => import("./pages/Login"));
+const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 
 import GlobalStyles from "./styles/GlobalStyles";
 import { Toaster } from "react-hot-toast";
@@ -19,26 +19,27 @@ function App() {
     <>
       <BrowserRouter>
         <GlobalStyles />
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate replace to="/dashboard" />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/artists" element={<Artists />} />
+              <Route path="/releases" element={<Releases />} />
+              <Route path="/user" element={<User />} />
+            </Route>
 
-        <Routes>
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate replace to="/dashboard" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/artists" element={<Artists />} />
-            <Route path="/releases" element={<Releases />} />
-            <Route path="/user" element={<User />} />
-          </Route>
+            <Route path="/login" element={<Login />} />
 
-          <Route path="/login" element={<Login />} />
-
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
 
       <Toaster
@@ -62,13 +63,17 @@ function App() {
               border: "1px solid var(--color-red-300)",
             },
           },
+          loading: {
+            style: {
+              backgroundColor: "var(--color-grey-0)",
+              color: "white",
+              border: "1px solid var(--color-grey-300)",
+            },
+          },
         }}
       />
     </>
   );
 }
-{
-  /* <DarkModeProvider>
-      </DarkModeProvider> */
-}
+
 export default App;

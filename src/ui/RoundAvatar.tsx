@@ -21,17 +21,18 @@ const modalStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
-    width: "90vw",
-    maxWidth: "700px",
+    maxWidth: "100vh",
     maxHeight: "90vh",
-    overflow: "auto",
-    padding: "20px",
+    width: "80vh",
+    height: "90vh",
+    padding: "1px",
     background: "#1F2937",
     zIndex: 1010,
     borderRadius: "8px",
     boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
     color: "#fff",
     border: "none",
+    overflow: "hidden",
   },
 };
 
@@ -80,18 +81,20 @@ const CloseIcon = styled(IoClose)`
 `;
 
 const ModalImageContainer = styled.div`
-  position: relative;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: calc(100% - 40px);
-  margin-top: 20px; /* Отступ сверху для иконки */
+  margin-top: 20px;
 `;
 
 const ModalImage = styled.img`
   max-width: 100%;
+  width: 90%;
   max-height: 100%;
+  object-fit: contain;
   border-radius: 8px;
 `;
 

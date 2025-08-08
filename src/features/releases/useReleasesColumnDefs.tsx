@@ -5,11 +5,12 @@ import { ICellRendererParams } from "ag-grid-community";
 
 import { type ReleasesData } from "./apiReleases";
 
-import DefaultAvatar from "../../assets/default-avatar.png";
+import DefaultAvatar from "../../assets/default-release.png";
 import AgEditButton from "../../ui/AgEditButton";
 import AgLink from "../../ui/AgLink";
 import styled from "styled-components";
 import RoundAvatar from "../../ui/RoundAvatar";
+import { svgIcon } from "../../icons/svgIcons";
 
 const EditingButtonsDiv = styled.div`
   display: flex;
@@ -78,6 +79,9 @@ const useReleasesColumnDefs = () => {
         floatingFilter: false,
         filter: "agTextColumnFilter",
         filterParams: getFilterParams,
+        icons: {
+          filter: svgIcon,
+        },
       },
       {
         headerName: "Owners",
@@ -99,6 +103,9 @@ const useReleasesColumnDefs = () => {
           }
           return params.value;
         },
+        icons: {
+          filter: svgIcon,
+        },
       },
 
       ...socialNetworks.map(
@@ -113,6 +120,9 @@ const useReleasesColumnDefs = () => {
             resizable: index !== array.length - 1,
             filter: "agTextColumnFilter",
             filterParams: getFilterParams,
+            icons: {
+              filter: " ",
+            },
           } as ColDef<ReleasesData>)
       ),
     ],

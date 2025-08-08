@@ -15,6 +15,8 @@ const sizes = {
     font-size: 1.4rem;
     padding: 1.2rem 1.6rem;
     font-weight: 500;
+    width: 150px;
+    height: 50px;
   `,
   large: css`
     font-size: 1.6rem;
@@ -33,7 +35,7 @@ const variations = {
     }
   `,
   secondary: css`
-    color: var(--color-grey-600);
+    color: var(--color-grey-500);
     background: var(--color-grey-0);
     border: 1px solid var(--color-grey-200);
 
@@ -60,15 +62,18 @@ const Button = styled.button<ButtonProps>`
   border: none;
   border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
   &:hover {
-    color: #ff6e1b;
+    transform: translateY(-1.5px);
+    box-shadow: var(--shadow-lg);
+    color: var(--color-grey-900);
   }
 
   &:hover svg,
   &:active svg,
   &.active:link svg,
   &.active:visited svg {
-    color: #ff6e1b;
+    color: #ffb996;
   }
 
   ${(props) => sizes[props.$size]}
