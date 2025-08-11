@@ -8,6 +8,7 @@ import ReactModal from "react-modal";
 import ReleasesForm from "./ReleasesForm";
 import toast from "react-hot-toast";
 import styled from "styled-components";
+import { useState } from "react";
 
 interface ModalInterface {
   modalName: ModalType;
@@ -25,7 +26,8 @@ const ReleaseName = styled.span`
 `;
 
 function ReleasesFormModal({ modalName, onRequestClose, currentRelease }: ModalInterface) {
-  const [deleteRelease] = useDeleteReleaseByIdMutation();
+  const [deleteRelease, { isLoading }] = useDeleteReleaseByIdMutation();
+  const [isDeleting, setIsDeleting] = useState(false);
   const { refetch } = useGetTableDataQuery();
   const isOpen = !!modalName;
 
@@ -34,7 +36,7 @@ function ReleasesFormModal({ modalName, onRequestClose, currentRelease }: ModalI
       toast.error("No artist.");
       return;
     }
-
+    setIsDeleting(true);
     try {
       const response = await deleteRelease(currentRelease.id).unwrap();
       toast.success(response.message);
@@ -46,6 +48,8 @@ function ReleasesFormModal({ modalName, onRequestClose, currentRelease }: ModalI
       } else {
         toast.error("Unknown error");
       }
+    } finally {
+      setIsDeleting(false);
     }
     refetch();
     onRequestClose();
@@ -66,11 +70,16 @@ function ReleasesFormModal({ modalName, onRequestClose, currentRelease }: ModalI
           </WarningText>
 
           <ButtonContainer>
-            <Button $variations="secondary" $size="medium" onClick={onRequestClose}>
+            <Button $variations="secondary" $size="medium" onClick={onRequestClose} disabled={isLoading || isDeleting}>
               Cancel
             </Button>
-            <Button $variations="danger" $size="medium" onClick={handleDeleteRelease}>
-              Delete
+            <Button
+              $variations="danger"
+              $size="medium"
+              onClick={handleDeleteRelease}
+              disabled={isLoading || isDeleting}
+            >
+              {isLoading || isDeleting ? "Deleting" : "Delete"}
             </Button>
           </ButtonContainer>
         </>

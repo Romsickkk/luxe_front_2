@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import "./App.css";
@@ -12,14 +12,23 @@ const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 import GlobalStyles from "./styles/GlobalStyles";
 import { Toaster } from "react-hot-toast";
 import AppLayout from "./ui/AppLayout";
-import ProtectedRoute from "./ui/ProtectedRoute";
+import ProtectedRoute, { FullPage } from "./ui/ProtectedRoute";
+import ProtectedLogin from "./ui/ProtectedLogin";
+import { LoaderOverlay } from "./ui/LoaderOverlay";
+import Spinner from "./ui/Spinner";
 
 function App() {
   return (
     <>
       <BrowserRouter>
         <GlobalStyles />
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense
+          fallback={
+            <FullPage>
+              <Spinner />
+            </FullPage>
+          }
+        >
           <Routes>
             <Route
               element={
@@ -34,8 +43,15 @@ function App() {
               <Route path="/releases" element={<Releases />} />
               <Route path="/user" element={<User />} />
             </Route>
-
-            <Route path="/login" element={<Login />} />
+            <Route
+              element={
+                <ProtectedLogin>
+                  <Outlet />
+                </ProtectedLogin>
+              }
+            >
+              <Route path="/login" element={<Login />} />
+            </Route>
 
             <Route path="*" element={<PageNotFound />} />
           </Routes>
@@ -45,7 +61,7 @@ function App() {
       <Toaster
         position="top-center"
         gutter={12}
-        containerStyle={{ margin: "8px" }}
+        containerStyle={{ margin: "8px", zIndex: 10000 }}
         toastOptions={{
           success: {
             duration: 3000,
@@ -72,6 +88,7 @@ function App() {
           },
         }}
       />
+      <LoaderOverlay />
     </>
   );
 }

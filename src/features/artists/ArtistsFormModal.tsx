@@ -7,6 +7,7 @@ import Button from "../../ui/Button";
 import { type ModalType } from "./ArtistsAgGrid";
 import { ButtonContainer, modalStyles, WarningText } from "../styles/FormsStyles";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 interface ModalInterface {
   modalName: ModalType;
@@ -16,7 +17,8 @@ interface ModalInterface {
 ReactModal.setAppElement("#root");
 
 function ArtistsFormModal({ modalName, onRequestClose, currentArtist }: ModalInterface) {
-  const [deleteArtistById] = useDeleteArtistByIdMutation();
+  const [deleteArtistById, { isLoading }] = useDeleteArtistByIdMutation();
+  const [isDeleting, setIsDeleting] = useState(false);
   const { refetch } = useGetTableDataQuery();
   const isOpen = !!modalName;
 
@@ -25,7 +27,7 @@ function ArtistsFormModal({ modalName, onRequestClose, currentArtist }: ModalInt
       toast.error("No artist.");
       return;
     }
-
+    setIsDeleting(true);
     try {
       const response = await deleteArtistById(currentArtist.id).unwrap();
       toast.success(response.message);
@@ -37,6 +39,8 @@ function ArtistsFormModal({ modalName, onRequestClose, currentArtist }: ModalInt
       } else {
         toast.error("Unknown error");
       }
+    } finally {
+      setIsDeleting(false);
     }
     refetch();
     onRequestClose();
@@ -59,11 +63,11 @@ function ArtistsFormModal({ modalName, onRequestClose, currentArtist }: ModalInt
           </WarningText>
 
           <ButtonContainer>
-            <Button $variations="secondary" $size="medium" onClick={onRequestClose}>
+            <Button $variations="secondary" $size="medium" onClick={onRequestClose} disabled={isLoading || isDeleting}>
               Cancel
             </Button>
-            <Button $variations="danger" $size="medium" onClick={handleDeleteArtist}>
-              Delete
+            <Button $variations="danger" $size="medium" onClick={handleDeleteArtist} disabled={isLoading || isDeleting}>
+              {isLoading || isDeleting ? "Deleting" : "Delete"}
             </Button>
           </ButtonContainer>
         </>

@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getXSRFTokenFromCookie } from "../../services/srf";
+import { getXSRFTokenFromCookie } from "../../authentication/srf";
 
 export type ReleasesData = {
   id: number;

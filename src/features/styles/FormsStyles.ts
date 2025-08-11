@@ -45,7 +45,7 @@ export const UploadIcon = styled(LuImagePlus)`
   font-size: 25px;
 `;
 
-export const RoundAvatar = styled.div<{ src: string }>`
+export const RoundAvatar = styled.div<{ src: string; disabled?: boolean }>`
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -53,19 +53,24 @@ export const RoundAvatar = styled.div<{ src: string }>`
   border: 2px;
   color: #fff !important;
   cursor: pointer;
-  transition: border 0.3s ease, opacity 0.3s ease, transform 0.3s ease; /* Плавный переход для border и opacity */
+  transition: border 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
 
-  &:hover {
-    border: 5px solid rgb(253, 96, 5);
-    opacity: 0.8;
-    transform: scale(1.1);
-  }
-  &:hover svg {
-    color: rgb(253, 96, 5);
-  }
-  &:hover {
-    opacity: 0.8;
-  }
+  ${(props) =>
+    props.disabled
+      ? `
+    opacity: 0.5;
+    pointer-events: none; 
+  `
+      : `
+    &:hover {
+      border: 5px solid rgb(253, 96, 5);
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+    &:hover svg {
+      color: rgb(253, 96, 5);
+    }
+  `}
 `;
 
 export const InputField = styled.input`

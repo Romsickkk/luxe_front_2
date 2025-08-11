@@ -1,5 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getXSRFTokenFromCookie } from "./srf";
+import { AdminType } from "./authSlice";
+
+type ResponseLoginType = {
+  admin: AdminType;
+  message: string;
+};
 
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -19,7 +25,7 @@ export const authApi = createApi({
   }),
   tagTypes: ["Auth"],
   endpoints: (builder) => ({
-    login: builder.mutation({
+    login: builder.mutation<ResponseLoginType, { name: string; password: string }>({
       query: ({ name, password }) => ({
         url: "admin/login",
         method: "POST",
@@ -32,7 +38,14 @@ export const authApi = createApi({
       query: () => "admin/user",
       providesTags: [{ type: "Auth", id: "USER" }],
     }),
+
+    logout: builder.mutation<any, void>({
+      query: () => ({
+        url: `admin/logout`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useCurrentUserQuery } = authApi;
+export const { useLoginMutation, useCurrentUserQuery, useLogoutMutation } = authApi;

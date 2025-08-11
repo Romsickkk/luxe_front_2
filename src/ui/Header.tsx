@@ -3,6 +3,7 @@ import { FaUser } from "react-icons/fa";
 import { IoLogOut } from "react-icons/io5";
 import styled from "styled-components";
 import ThemeToggle from "./ThemeToggle";
+import Logout from "../authentication/Logout";
 
 const StyledHeader = styled.header`
   background-color: var(--color-grey-0);
@@ -14,8 +15,6 @@ const StyledHeader = styled.header`
   align-items: center;
   justify-content: flex-end;
 `;
-
-const svgStyle = { height: "20px", width: "20px" };
 
 const StyledSvg = styled.div`
   padding: 0.2rem 1rem 0.2rem 1rem;
@@ -41,8 +40,7 @@ function Header() {
         <ThemeToggle />
       </StyledSvg>
       <StyledSvg>
-        <IoLogOut style={svgStyle} />
-        {/* <Logout /> */}
+        <Logout />
       </StyledSvg>
     </StyledHeader>
   );

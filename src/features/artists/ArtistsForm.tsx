@@ -13,7 +13,7 @@ import {
 import Button from "../../ui/Button";
 
 import DefaultAvatar from "../../assets/default-avatar.png";
-import { imageFilter } from "../../hooks/imageFilter";
+import { imageFilter } from "../../services/imageFilter";
 
 import {
   AvatarContainer,
@@ -28,6 +28,9 @@ import {
   UploadIcon,
 } from "../styles/FormsStyles";
 import { responseWithToast } from "../services/responseWithToast";
+import { useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store/store";
+import { useDispatch } from "react-redux";
 
 interface FormData {
   name: string;
@@ -53,7 +56,11 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
   const [avatarChanged, setAvatarChanged] = useState<boolean>(false);
   const [updateArtistByName] = useUpdateArtistByIdMutation();
   const [uploadNewArtist, { isLoading }] = useUploadNewArtistMutation();
+
   const [isNameDuplicate, setIsNameDuplicate] = useState(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const isSubmitting = useSelector((state: RootState) => state.ui.isLoading);
 
   const {
     register,
@@ -133,7 +140,7 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
-      const response = await responseWithToast("Loading...", () => uploadNewArtist(formData).unwrap());
+      const response = await responseWithToast("Loading...", () => uploadNewArtist(formData).unwrap(), dispatch);
 
       if (response) {
         reset();
@@ -165,9 +172,12 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
       for (const [key, value] of formData) {
         console.log(key, value);
       }
+
       if ([...formData.keys()].length > 0) {
-        const response = await responseWithToast("Loading...", () =>
-          updateArtistByName({ id: currentArtist.id, newData: formData }).unwrap()
+        const response = await responseWithToast(
+          "Loading...",
+          () => updateArtistByName({ id: currentArtist.id, newData: formData }).unwrap(),
+          dispatch
         );
 
         if (response) {
@@ -184,9 +194,19 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
   return (
     <FormContainer onSubmit={handleSubmit(onSubmit)}>
       <AvatarContainer>
-        <HiddenFileInput id="avatarUpload" type="file" accept="image/*" onChange={handleAvatarChange} />
+        <HiddenFileInput
+          disabled={isLoading || isSubmitting}
+          id="avatarUpload"
+          type="file"
+          accept="image/*"
+          onChange={handleAvatarChange}
+        />
         <AvatarWrapper>
-          <RoundAvatar onClick={() => document.getElementById("avatarUpload")?.click()} src={newAvatar}>
+          <RoundAvatar
+            disabled={isLoading || isSubmitting}
+            onClick={() => document.getElementById("avatarUpload")?.click()}
+            src={newAvatar}
+          >
             <UploadIcon />
           </RoundAvatar>
         </AvatarWrapper>
@@ -196,6 +216,7 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
         <div key={field}>
           <Label>{field.length > 3 ? field.charAt(0).toUpperCase() + field.slice(1) : field.toUpperCase()}</Label>
           <InputField
+            disabled={isLoading || isSubmitting}
             {...register(field as keyof FormData, {
               required: field === "name" ? `${field[0].toUpperCase() + field.slice(1)} is compulsory` : false,
               pattern:
@@ -213,11 +234,22 @@ function ArtistsForm({ format, currentArtist, onRequestClose }: UserFormProps) {
       ))}
 
       <ButtonContainer>
-        <Button $variations="secondary" $size="medium" type="button" disabled={isLoading} onClick={onRequestClose}>
+        <Button
+          $variations="secondary"
+          $size="medium"
+          type="button"
+          disabled={isLoading || isSubmitting}
+          onClick={onRequestClose}
+        >
           Cancel
         </Button>
-        <Button $variations="primary" $size="medium" type="submit" disabled={isLoading || isNameDuplicate}>
-          {isLoading ? "Saving..." : "Save"}
+        <Button
+          $variations="primary"
+          $size="medium"
+          type="submit"
+          disabled={isLoading || isSubmitting || isNameDuplicate}
+        >
+          {isLoading || isSubmitting ? "Saving..." : "Save"}
         </Button>
       </ButtonContainer>
     </FormContainer>

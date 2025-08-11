@@ -1,10 +1,8 @@
 import { useState } from "react";
 
-import { imageFilter } from "../../hooks/imageFilter";
+import { imageFilter } from "../../services/imageFilter";
 
 import { Controller, useForm } from "react-hook-form";
-// import { useUpdateReleasesByNameMutation } from "./apiReleases";
-// import { useDeleteImageMutation, useUpdateImageMutation } from "../../services/apiReleasesAvatar";
 
 import {
   useGetTableDataQuery,
@@ -13,7 +11,6 @@ import {
   type ReleasesData,
 } from "./apiReleases";
 
-import toast from "react-hot-toast";
 import Button from "../../ui/Button";
 import Select from "react-select";
 
@@ -34,6 +31,9 @@ import {
   UploadIcon,
 } from "../styles/FormsStyles";
 import { responseWithToast } from "../services/responseWithToast";
+import { useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store/store";
+import { useDispatch } from "react-redux";
 
 interface FormData {
   name: string;
@@ -48,16 +48,20 @@ interface UserFormProps {
 }
 
 function ReleasesForm({ format, currentRelease, onRequestClose }: UserFormProps) {
+  const { refetch } = useGetTableDataQuery();
   const { avatar, name, owners, cygnus } = currentRelease ?? {};
   const { ownersData, isLoading: isSelectLoading } = useSelectData();
-  const [updateReleaseByName, { isLoading }] = useUpdateReleaseByIdMutation();
-  const [uploadRelease] = useUploadNewReleaseMutation();
-  const { refetch } = useGetTableDataQuery();
 
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [uploadRelease] = useUploadNewReleaseMutation();
   const [newAvatar, setNewAvatar] = useState<string>(typeof avatar === "string" ? avatar : DefaultAvatar);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarChanged, setAvatarChanged] = useState<boolean>(false);
+  const [updateReleaseByName, { isLoading }] = useUpdateReleaseByIdMutation();
+
   const animatedComponents = makeAnimated();
+
+  const dispatch = useDispatch<AppDispatch>();
+  const isSubmitting = useSelector((state: RootState) => state.ui.isLoading);
 
   const {
     control,
@@ -97,7 +101,7 @@ function ReleasesForm({ format, currentRelease, onRequestClose }: UserFormProps)
         formData.append(`owners[${index}]`, String(ownerId));
       });
 
-      const response = await responseWithToast("Loading...", () => uploadRelease(formData).unwrap());
+      const response = await responseWithToast("Loading...", () => uploadRelease(formData).unwrap(), dispatch);
 
       if (response) {
         reset();
@@ -145,8 +149,10 @@ function ReleasesForm({ format, currentRelease, onRequestClose }: UserFormProps)
       //   console.log(key, ": ", value);
       // }
 
-      const response = await responseWithToast("Loading...", () =>
-        updateReleaseByName({ id: currentRelease.id, newData: formData }).unwrap()
+      const response = await responseWithToast(
+        "Loading...",
+        () => updateReleaseByName({ id: currentRelease.id, newData: formData }).unwrap(),
+        dispatch
       );
 
       if (response) {
@@ -220,11 +226,17 @@ function ReleasesForm({ format, currentRelease, onRequestClose }: UserFormProps)
       ))}
 
       <ButtonContainer>
-        <Button $variations="secondary" $size="medium" type="button" disabled={isLoading} onClick={onRequestClose}>
+        <Button
+          $variations="secondary"
+          $size="medium"
+          type="button"
+          disabled={isLoading || isSubmitting}
+          onClick={onRequestClose}
+        >
           Cancel
         </Button>
-        <Button $variations="primary" $size="medium" type="submit" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save"}
+        <Button $variations="primary" $size="medium" type="submit" disabled={isLoading || isSubmitting}>
+          {isLoading || isSubmitting ? "Saving..." : "Save"}
         </Button>
       </ButtonContainer>
     </FormContainer>

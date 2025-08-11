@@ -1,23 +1,24 @@
 import { useNavigate } from "react-router-dom";
-import { useCurrentUserQuery } from "../services/apiAuth";
+import { useCurrentUserQuery } from "../authentication/apiAuth";
 import Spinner from "./Spinner";
 import { useEffect } from "react";
 import styled from "styled-components";
 import toast from "react-hot-toast";
-const FullPage = styled.div`
+export const FullPage = styled.div`
   height: 100vh;
   background-color: var(--color-grey-50);
   display: flex;
   align-items: center;
   justify-content: center;
 `;
-interface ProtectedRouteProps {
+export type ProtectedRouteProps = {
   children: React.ReactNode;
-}
+};
 
 function ProtectedRoute({ children }: ProtectedRouteProps) {
   const navigate = useNavigate();
   const { data: user, isLoading, error } = useCurrentUserQuery(undefined);
+  console.log(user);
 
   useEffect(() => {
     if (!user && !isLoading) {
